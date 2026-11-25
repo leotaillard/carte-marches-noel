@@ -26,13 +26,13 @@
   --ll-gray-200:#E8E8E8;   /* filets */
   --ll-gray-100:#F2F2F2;   /* fonds légers */
   --ll-white:#fff;
-  --font-heading:"GT Ultra Median",Georgia,"Source Serif 4",serif;           /* titres : 700, letter-spacing -0.03em */
-  --font-sans:"Forme Grotesque Pro",Inter,"Helvetica Neue",Arial,sans-serif;  /* chapeau, interface, légendes */
+  --font-heading:"GT Ultra Median",Georgia,"Source Serif 4",serif;           /* grand titre uniquement : 700, letter-spacing -0.03em */
+  --font-sans:"Forme Grotesque Pro",Inter,"Helvetica Neue",Arial,sans-serif;  /* tout le reste : interface, liste, infobulles */
 }
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0;height:100%;background:var(--ll-white);color:var(--ll-black);font:16px/1.45 var(--font-sans);-webkit-font-smoothing:antialiased}
 .wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%;min-height:540px}
-#map{height:100%;min-height:420px;background:var(--ll-gray-100)}
+#map{height:100%;min-height:420px;background:var(--ll-white)}
 aside{border-left:1px solid var(--ll-gray-200);display:flex;flex-direction:column;min-height:0}
 .head{padding:16px 18px 14px;border-bottom:1px solid var(--ll-gray-200)}
 h1{font:700 24px/1.1 var(--font-heading);letter-spacing:-0.03em;margin:0}
@@ -46,18 +46,20 @@ h1 .sur{color:var(--ll-red)}
 ul{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1}
 li{padding:12px 18px;border-bottom:1px solid var(--ll-gray-200);cursor:pointer}
 li:hover{background:var(--ll-gray-100)}
-li .t{font:700 17px/1.2 var(--font-heading);letter-spacing:-0.02em}
+li .t{font:700 17px/1.2 var(--font-sans)}
 li .m{color:var(--ll-gray-500);font-size:14px;margin-top:2px}
 .badge{display:inline-block;font:700 11px/1 var(--font-sans);padding:4px 7px;border-radius:2px;margin-left:6px;vertical-align:2px}
 .now{background:var(--ll-red);color:var(--ll-white)}
 .soon{background:var(--ll-gray-100);color:var(--ll-gray-900)}
 .empty{padding:20px 18px;color:var(--ll-gray-500);cursor:default}
-.pin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--ll-black);border:2px solid var(--ll-white);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.pin{position:relative;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--ll-black);border:3px solid var(--ll-white);box-shadow:0 1px 5px rgba(0,0,0,.45)}
+.pin::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--ll-white)}
 .pin.on{background:var(--ll-red)}
+.leaflet-marker-icon:hover .pin,.leaflet-marker-icon:focus .pin{transform:rotate(-45deg) scale(1.15)}
 .leaflet-container{font-family:var(--font-sans)}
 .leaflet-popup-content-wrapper{border-radius:2px}
 .leaflet-popup-content{font:15px/1.4 var(--font-sans);margin:12px 14px}
-.leaflet-popup-content .pl{font:700 17px/1.15 var(--font-heading);letter-spacing:-0.02em}
+.leaflet-popup-content .pl{font:700 17px/1.2 var(--font-sans)}
 .leaflet-popup-content .pn{margin-top:2px}
 .leaflet-popup-content .d{color:var(--ll-gray-500);font-size:14px;margin-top:4px}
 .leaflet-popup-content .badge{margin:8px 0 0}
@@ -150,13 +152,27 @@ const datesTxt = m => m.dates || (m.a === m.b ? 'Le ' + jf(m.a) : 'Du ' + jf(m.a
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ===== CARTE (fond swisstopo) ===== */
-const map = L.map('map', {scrollWheelZoom:false}).setView([46.72, 7.03], 10);
+/* Lisibilité : fond swisstopo éclairci, hors zone voilée en blanc, limites de districts en gris.
+   La carte reste bornée à la région pour éviter de se perdre. */
+const map = L.map('map', {scrollWheelZoom:false, minZoom:9, maxBounds:[[46.30,6.45],[47.20,7.65]], maxBoundsViscosity:0.8}).setView([46.72, 7.03], 10);
 L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg', {
-  maxZoom: 18, attribution: '© <a href="https://www.swisstopo.admin.ch/">swisstopo</a>'
+  maxZoom: 18, opacity: 0.6, attribution: '© <a href="https://www.swisstopo.admin.ch/">swisstopo</a>'
 }).addTo(map);
+/* Districts FR + Broye-Vully (VD). Facultatif : si le fichier ne se charge pas (ouverture en file://), la carte fonctionne sans. */
+fetch('data/fribourg-broye-districts.geojson').then(r => r.ok ? r.json() : Promise.reject()).then(geo => {
+  const rings = [];
+  geo.features.forEach(f => {
+    const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+    polys.forEach(poly => poly.forEach(ring => rings.push(ring.map(([x,y]) => [y,x]))));
+  });
+  // Voile blanc sur tout le reste : un grand rectangle percé par les districts (règle evenodd).
+  L.polygon([[[-85,-180],[-85,180],[85,180],[85,-180]], ...rings],
+    {stroke:false, fillColor:'#fff', fillOpacity:0.7, interactive:false}).addTo(map);
+  L.geoJSON(geo, {interactive:false, style:{color:'#7D7D7D', weight:1, opacity:0.8, fill:false}}).addTo(map);
+}).catch(() => {});
 map.on('focus', () => map.scrollWheelZoom.enable());
 map.on('blur', () => map.scrollWheelZoom.disable());
-const icon = on => L.divIcon({className:'', html:'<div class="pin'+(on?' on':'')+'"></div>', iconSize:[20,20], iconAnchor:[10,20], popupAnchor:[0,-20]});
+const icon = on => L.divIcon({className:'', html:'<div class="pin'+(on?' on':'')+'"></div>', iconSize:[26,26], iconAnchor:[13,31], popupAnchor:[0,-30]});
 const popup = m => '<div class="pl">'+esc(m.l)+'</div><div class="pn">'+esc(m.n)+'</div><div class="d">'+esc(datesTxt(m))+(m.h?'<br>'+esc(m.h):'')+'</div>'
   + (m.on ? '<div><span class="badge now">Ouvert aujourd’hui</span></div>' : '');
 const layer = L.layerGroup().addTo(map);
