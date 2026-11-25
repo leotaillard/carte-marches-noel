@@ -11,14 +11,16 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Les données viennent d'une Google Sheet, lue à chaque ouverture de la page (CSV).
 - La page n'affiche que les marchés en cours ou à venir, d'après la date du lecteur. Les marchés passés disparaissent seuls.
 - Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte (en dessous sur mobile).
-- Fond de carte : swisstopo, carte nationale en gris (WMTS gratuit, attribution obligatoire), éclairci (opacité 0.6). Hors des districts, un voile blanc ; limites de districts en gris. Vue bornée à la région.
+- Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « Limites © OFS, ThemaKart ».
+- Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py`. Vue bornée à la région, zoom 9 à 13.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
 
 ## Structure
 
 ```
 index.html                              la carte (seul fichier publié qui compte)
-data/fribourg-broye-districts.geojson   districts FR + Broye-Vully (VD) : limites grises et voile blanc hors zone
+data/fribourg-broye-districts.geojson   districts FR + Broye-Vully (VD), sert à reconnaître les districts lors de la génération du fond
+outils/fond-carte.py                    génère la constante FOND depuis les limites OFS (paquet npm swiss-maps)
 README.md                               mise en ligne et intégration
 .nojekyll                               GitHub Pages sert les fichiers tels quels
 ```
@@ -66,7 +68,7 @@ Polices : sous licence commerciale. Ne jamais copier les fichiers .woff2 dans ce
 
 ## Tester
 
-- Ouvrir `index.html` directement dans Chrome (l'aperçu des outils Claude bloque les tuiles de carte). En `file://`, les districts ne se chargent pas : la carte s'affiche sans voile ni limites. Passer par le serveur local pour les voir.
+- Ouvrir `index.html` directement dans Chrome : le fond est intégré, il s'affiche aussi en `file://`.
 - Simuler une autre date : `index.html?date=2026-12-12`.
 - Serveur local si besoin : `python3 -m http.server 8000`.
 
