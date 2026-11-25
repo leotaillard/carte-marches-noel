@@ -11,16 +11,15 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Les données viennent d'une Google Sheet, lue à chaque ouverture de la page (CSV).
 - La page n'affiche que les marchés en cours ou à venir, d'après la date du lecteur. Les marchés passés disparaissent seuls.
 - Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte. Sur mobile, elle passe dessous et n'affiche que les 3 prochains marchés (`LIMITE_MOBILE`), le reste derrière un bouton.
-- Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « Limites © OFS, ThemaKart ».
-- Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py`. Vue bornée à la région, zoom 9 à 13.
+- Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « © swisstopo ».
+- Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py` depuis les données ouvertes swisstopo : swissBOUNDARIES3D (cantons, districts) et swissTLMRegio (lacs). Usage commercial autorisé avec mention de la source. Ne pas utiliser les limites de l'OFS (ThemaKart) : leur usage commercial demande une autorisation. Vue bornée à la région, zoom 9 à 13.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
 
 ## Structure
 
 ```
 index.html                              la carte (seul fichier publié qui compte)
-data/fribourg-broye-districts.geojson   districts FR + Broye-Vully (VD), sert à reconnaître les districts lors de la génération du fond
-outils/fond-carte.py                    génère la constante FOND depuis les limites OFS (paquet npm swiss-maps)
+outils/fond-carte.py                    génère la constante FOND depuis swissBOUNDARIES3D et swissTLMRegio (swisstopo)
 README.md                               mise en ligne et intégration
 .nojekyll                               GitHub Pages sert les fichiers tels quels
 ```

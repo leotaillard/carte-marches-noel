@@ -36,5 +36,5 @@ Sur mobile, la carte et la liste s'empilent. La liste n'affiche que les trois pr
 ## À savoir
 
 - **Polices** : les polices du site (GT Ultra Median, Forme Grotesque Pro) sont sous licence et ne sont pas incluses. Sur github.io, elles ne se chargent pas et des polices proches les remplacent. Pour l'identité complète, héberger la page sur le domaine laliberte.ch, ou demander à l'équipe web d'autoriser le CORS sur `/fonts/` pour l'adresse de la carte.
-- **Fond de carte** : limites © OFS, ThemaKart, intégrées dans la page. Pour les régénérer (nouvelle année, autre zone), voir `outils/fond-carte.py`.
+- **Fond de carte** : © swisstopo (swissBOUNDARIES3D et swissTLMRegio, données ouvertes, usage commercial autorisé avec mention de la source). Les contours sont intégrés dans la page. Pour les régénérer (nouvelle année, autre zone), voir `outils/fond-carte.py`.
 - **Tester une date** : ajouter `?date=2026-12-12` à l'adresse.
