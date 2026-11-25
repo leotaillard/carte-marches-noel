@@ -52,6 +52,11 @@ li .m{color:var(--ll-gray-500);font-size:14px;margin-top:2px}
 .now{background:var(--ll-red);color:var(--ll-white)}
 .soon{background:var(--ll-gray-100);color:var(--ll-gray-900)}
 .empty{padding:20px 18px;color:var(--ll-gray-500);cursor:default}
+li.more{padding:12px 18px 16px;cursor:default;border-bottom:0}
+li.more:hover{background:none}
+.more button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--ll-black);background:var(--ll-white);color:var(--ll-black);border-radius:999px;padding:6px 14px;min-height:36px;cursor:pointer;width:100%}
+.more button:hover{background:var(--ll-black);color:var(--ll-white)}
+.more button:focus-visible{outline:2px solid var(--ll-red);outline-offset:2px}
 .pin{position:relative;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--ll-black);border:3px solid var(--ll-white);box-shadow:0 1px 5px rgba(0,0,0,.45)}
 .pin::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--ll-white)}
 .pin.on{background:var(--ll-red)}
@@ -70,9 +75,13 @@ li .m{color:var(--ll-gray-500);font-size:14px;margin-top:2px}
 .legend{display:flex;gap:14px;font-size:13px;color:var(--ll-gray-500);margin-top:10px}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
 @media(max-width:700px){
-  .wrap{grid-template-columns:1fr;grid-template-rows:60vh auto;height:auto}
+  .wrap{grid-template-columns:1fr;grid-template-rows:380px auto;height:auto;min-height:0}
+  #map{min-height:0}
   aside{border-left:0;border-top:1px solid var(--ll-gray-200)}
-  ul{max-height:none}
+  .head{padding:12px 16px 10px}
+  ul{max-height:none;overflow:visible}
+  li{padding:10px 16px}
+  li.more{padding:10px 16px 14px}
 }
 </style>
 </head>
@@ -187,23 +196,49 @@ const list = document.getElementById('list');
 const count = document.getElementById('count');
 let live = [];
 
+/* Sur mobile, la liste s'empile sous la carte : on n'affiche que les prochains marchés,
+   le reste sur demande, pour garder l'iframe courte. */
+const LIMITE_MOBILE = 3;
+const mobile = matchMedia('(max-width:700px)');
+let rows = [], markers = [], expanded = false;
+
 function render(f){
   layer.clearLayers();
-  const rows = live.filter(m => f === 'now' ? m.on : f === 'we' ? weDays.some(x => openOn(m,x)) : true);
-  const markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l}).bindPopup(popup(m)).addTo(layer));
+  rows = live.filter(m => f === 'now' ? m.on : f === 'we' ? weDays.some(x => openOn(m,x)) : true);
+  markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l}).bindPopup(popup(m)).addTo(layer));
   count.textContent = rows.length + (rows.length > 1 ? ' marchés' : ' marché') + ' · mis à jour le ' + jf(today);
-  list.innerHTML = rows.length ? rows.map((m,i) =>
+  expanded = false;
+  drawList();
+  if (markers.length) map.fitBounds(L.featureGroup(markers).getBounds(), {padding:[30,30], maxZoom:12});
+}
+
+function drawList(){
+  const short = mobile.matches && rows.length > LIMITE_MOBILE + 1;
+  const shown = short && !expanded ? rows.slice(0, LIMITE_MOBILE) : rows;
+  const rest = rows.length - LIMITE_MOBILE;
+  list.innerHTML = rows.length ? shown.map((m,i) =>
     '<li tabindex="0" data-i="'+i+'"><div class="t">'+esc(m.l)
     + (m.on ? '<span class="badge now">Aujourd’hui</span>' : m.nx <= addDays(today,7) ? '<span class="badge soon">Bientôt</span>' : '')
     + '</div><div>'+esc(m.n)+'</div><div class="m">'+esc(datesTxt(m))+(m.h?' · '+esc(m.h):'')+(m.r?' · '+esc(m.r):'')+'</div></li>').join('')
+    + (short ? '<li class="more"><button type="button" aria-expanded="'+expanded+'">'
+      + (expanded ? 'Afficher moins' : 'Voir les ' + rest + ' autres marchés') + '</button></li>' : '')
     : '<li class="empty">Aucun marché pour cette sélection.</li>';
   list.querySelectorAll('li[data-i]').forEach(li => {
-    const go = () => { const mk = markers[+li.dataset.i]; map.setView(mk.getLatLng(), 12); mk.openPopup(); };
+    const go = () => {
+      const mk = markers[+li.dataset.i]; map.setView(mk.getLatLng(), 12); mk.openPopup();
+      if (mobile.matches) map.getContainer().scrollIntoView({behavior:'smooth', block:'start'});
+    };
     li.addEventListener('click', go);
     li.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   });
-  if (markers.length) map.fitBounds(L.featureGroup(markers).getBounds(), {padding:[30,30], maxZoom:12});
+  const more = list.querySelector('.more button');
+  if (more) more.addEventListener('click', () => {
+    expanded = !expanded; drawList();
+    if (expanded) list.querySelector('li[data-i="'+LIMITE_MOBILE+'"]').focus();
+    else list.querySelector('.more button').focus();
+  });
 }
+mobile.addEventListener('change', drawList);
 
 document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));

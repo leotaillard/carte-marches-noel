@@ -31,7 +31,7 @@ Bloc HTML du CMS :
         loading="lazy"></iframe>
 ```
 
-Sur mobile, la carte et la liste s'empilent : prévoir environ 900 px de hauteur, ou ajouter iframe-resizer.
+Sur mobile, la carte et la liste s'empilent. La liste n'affiche que les trois prochains marchés, avec un bouton pour voir les autres : prévoir environ 860 px de hauteur. Le nombre se règle avec `LIMITE_MOBILE` dans le script.
 
 ## À savoir
 

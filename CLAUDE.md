@@ -10,7 +10,7 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Une seule page statique : `index.html` (HTML + CSS + JS dans le même fichier, sans build ni framework).
 - Les données viennent d'une Google Sheet, lue à chaque ouverture de la page (CSV).
 - La page n'affiche que les marchés en cours ou à venir, d'après la date du lecteur. Les marchés passés disparaissent seuls.
-- Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte (en dessous sur mobile).
+- Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte. Sur mobile, elle passe dessous et n'affiche que les 3 prochains marchés (`LIMITE_MOBILE`), le reste derrière un bouton.
 - Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « Limites © OFS, ThemaKart ».
 - Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py`. Vue bornée à la région, zoom 9 à 13.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
