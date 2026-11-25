@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marchés de Noël 2026 – La Liberté</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* ===== Identité graphique laliberte.ch =====
+   Relevée sur laliberte.ch le 25.11.2026.
+   Polices sous licence commerciale : on les référence depuis laliberte.ch, sans copier les fichiers.
+   Elles ne se chargent que si la page est servie depuis le domaine laliberte.ch
+   (ou si laliberte.ch autorise le CORS sur /fonts/). Sinon, les polices de repli s'appliquent. */
+@font-face{font-family:"GT Ultra Median";font-weight:700;font-display:swap;src:url("https://www.laliberte.ch/fonts/gt-ultra/GT-Ultra-Median-Bold.woff2") format("woff2")}
+@font-face{font-family:"Forme Grotesque Pro";font-weight:400;font-display:swap;src:url("https://www.laliberte.ch/fonts/forme-grotesque/forme-grotesque-regular-pro.woff2") format("woff2")}
+@font-face{font-family:"Forme Grotesque Pro";font-weight:700;font-display:swap;src:url("https://www.laliberte.ch/fonts/forme-grotesque/forme-grotesque-bold-pro.woff2") format("woff2")}
+:root{
+  --ll-red:#E21B22;        /* rouge La Liberté (surtitres, liens, accents) */
+  --ll-red-light:#F4353C;  /* rouge clair (survol, mode sombre) */
+  --ll-black:#000;
+  --ll-gray-900:#454545;
+  --ll-gray-500:#7D7D7D;   /* texte secondaire */
+  --ll-gray-300:#DBDBDB;   /* bordures marquées */
+  --ll-gray-200:#E8E8E8;   /* filets */
+  --ll-gray-100:#F2F2F2;   /* fonds légers */
+  --ll-white:#fff;
+  --font-heading:"GT Ultra Median",Georgia,"Source Serif 4",serif;           /* titres : 700, letter-spacing -0.03em */
+  --font-sans:"Forme Grotesque Pro",Inter,"Helvetica Neue",Arial,sans-serif;  /* chapeau, interface, légendes */
+}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:var(--ll-white);color:var(--ll-black);font:16px/1.45 var(--font-sans);-webkit-font-smoothing:antialiased}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%;min-height:540px}
+#map{height:100%;min-height:420px;background:var(--ll-gray-100)}
+aside{border-left:1px solid var(--ll-gray-200);display:flex;flex-direction:column;min-height:0}
+.head{padding:16px 18px 14px;border-bottom:1px solid var(--ll-gray-200)}
+h1{font:700 24px/1.1 var(--font-heading);letter-spacing:-0.03em;margin:0}
+h1 .sur{color:var(--ll-red)}
+#count{margin:6px 0 12px;color:var(--ll-gray-500);font-size:14px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font:inherit;font-size:14px;border:1px solid var(--ll-gray-300);background:var(--ll-white);color:var(--ll-black);border-radius:999px;padding:6px 13px;min-height:36px;cursor:pointer}
+.filters button:hover{border-color:var(--ll-black)}
+.filters button[aria-pressed=true]{background:var(--ll-black);color:var(--ll-white);border-color:var(--ll-black)}
+.filters button:focus-visible,li:focus-visible{outline:2px solid var(--ll-red);outline-offset:2px}
+ul{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1}
+li{padding:12px 18px;border-bottom:1px solid var(--ll-gray-200);cursor:pointer}
+li:hover{background:var(--ll-gray-100)}
+li .t{font:700 17px/1.2 var(--font-heading);letter-spacing:-0.02em}
+li .m{color:var(--ll-gray-500);font-size:14px;margin-top:2px}
+.badge{display:inline-block;font:700 11px/1 var(--font-sans);padding:4px 7px;border-radius:2px;margin-left:6px;vertical-align:2px}
+.now{background:var(--ll-red);color:var(--ll-white)}
+.soon{background:var(--ll-gray-100);color:var(--ll-gray-900)}
+.empty{padding:20px 18px;color:var(--ll-gray-500);cursor:default}
+.pin{width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--ll-black);border:2px solid var(--ll-white);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.pin.on{background:var(--ll-red)}
+.leaflet-container{font-family:var(--font-sans)}
+.leaflet-popup-content-wrapper{border-radius:2px}
+.leaflet-popup-content{font:15px/1.4 var(--font-sans);margin:12px 14px}
+.leaflet-popup-content .pl{font:700 17px/1.15 var(--font-heading);letter-spacing:-0.02em}
+.leaflet-popup-content .pn{margin-top:2px}
+.leaflet-popup-content .d{color:var(--ll-gray-500);font-size:14px;margin-top:4px}
+.leaflet-popup-content .badge{margin:8px 0 0}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--ll-gray-500);margin-top:10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+@media(max-width:700px){
+  .wrap{grid-template-columns:1fr;grid-template-rows:60vh auto;height:auto}
+  aside{border-left:0;border-top:1px solid var(--ll-gray-200)}
+  ul{max-height:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="map" role="region" aria-label="Carte des marchés de Noël"></div>
+  <aside>
+    <div class="head">
+      <h1><span class="sur">Marchés de Noël.</span> En cours et à venir</h1>
+      <p id="count"></p>
+      <div class="filters" role="group" aria-label="Filtrer">
+        <button data-f="all" aria-pressed="true">Tous</button>
+        <button data-f="now" aria-pressed="false">Aujourd’hui</button>
+        <button data-f="we" aria-pressed="false">Ce week-end</button>
+      </div>
+      <div class="legend"><span><i style="background:var(--ll-red)"></i>Ouvert aujourd’hui</span><span><i style="background:var(--ll-black)"></i>À venir</span></div>
+    </div>
+    <ul id="list"></ul>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+{
+/* ===== SOURCE DES DONNÉES =====
+   La carte lit l'onglet « Saisie » de la Google Sheet à chaque ouverture.
+   La feuille doit être partagée en lecture (« Tous les utilisateurs disposant du lien »).
+   En production, préférer l'URL CSV de « Fichier > Partager > Publier sur le web » (onglet Saisie, format CSV). */
+const SHEET_ID = '1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=Saisie';
+
+/* Colonnes lues (par nom d'en-tête) : Nom, Lieu, Région, Latitude, Longitude, Début, Fin, Dates, Infos
+   Colonne facultative « Jours » : jours d'ouverture, ex. « ven,sam,dim » ou « mar-dim ». Vide = tous les jours. */
+
+const parseCSV = t => {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"' && t[i+1] === '"') { f += '"'; i++; } else if (c === '"') q = false; else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i+1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  return rows;
+};
+const num = v => parseFloat(String(v).replace(/\s/g,'').replace(',', '.'));
+const toIso = v => {
+  v = String(v).trim(); let m;
+  if ((m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  if ((m = v.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})/))) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  return null;
+};
+const JOURS = {dim:0,lun:1,mar:2,mer:3,jeu:4,ven:5,sam:6};
+const parseJours = v => {
+  v = String(v || '').toLowerCase().replace(/\s/g,''); if (!v) return null;
+  const out = new Set();
+  for (const part of v.split(/[,;]/)) {
+    const [a, b] = part.split('-').map(x => JOURS[x.slice(0,3)]);
+    if (a === undefined) continue;
+    if (b === undefined) out.add(a); else for (let d = a; ; d = (d+1) % 7) { out.add(d); if (d === b) break; }
+  }
+  return out.size ? [...out] : null;
+};
+
+/* ===== DATES ===== (?date=2026-12-05 dans l’URL pour tester) */
+const p = new URLSearchParams(location.search).get('date');
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today = p && /^\d{4}-\d{2}-\d{2}$/.test(p) ? p : iso(new Date());
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return iso(d); };
+const openOn = (m, day) => day >= m.a && day <= m.b && (!m.wd || m.wd.includes(parse(day).getDay()));
+const nextOpen = m => { for (let x = today > m.a ? today : m.a; x <= m.b; x = addDays(x,1)) if (openOn(m,x)) return x; return null; };
+const dow = parse(today).getDay();
+const fri = addDays(today, dow === 0 ? -2 : dow === 6 ? -1 : 5 - dow);
+const weDays = [fri, addDays(fri,1), addDays(fri,2)].filter(x => x >= today);
+const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const jf = s => { const d = parse(s); return d.getDate() + (d.getDate()===1?'er':'') + ' ' + mois[d.getMonth()]; };
+const datesTxt = m => m.dates || (m.a === m.b ? 'Le ' + jf(m.a) : 'Du ' + jf(m.a) + ' au ' + jf(m.b));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ===== CARTE (fond swisstopo) ===== */
+const map = L.map('map', {scrollWheelZoom:false}).setView([46.72, 7.03], 10);
+L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg', {
+  maxZoom: 18, attribution: '© <a href="https://www.swisstopo.admin.ch/">swisstopo</a>'
+}).addTo(map);
+map.on('focus', () => map.scrollWheelZoom.enable());
+map.on('blur', () => map.scrollWheelZoom.disable());
+const icon = on => L.divIcon({className:'', html:'<div class="pin'+(on?' on':'')+'"></div>', iconSize:[20,20], iconAnchor:[10,20], popupAnchor:[0,-20]});
+const popup = m => '<div class="pl">'+esc(m.l)+'</div><div class="pn">'+esc(m.n)+'</div><div class="d">'+esc(datesTxt(m))+(m.h?'<br>'+esc(m.h):'')+'</div>'
+  + (m.on ? '<div><span class="badge now">Ouvert aujourd’hui</span></div>' : '');
+const layer = L.layerGroup().addTo(map);
+const list = document.getElementById('list');
+const count = document.getElementById('count');
+let live = [];
+
+function render(f){
+  layer.clearLayers();
+  const rows = live.filter(m => f === 'now' ? m.on : f === 'we' ? weDays.some(x => openOn(m,x)) : true);
+  const markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l}).bindPopup(popup(m)).addTo(layer));
+  count.textContent = rows.length + (rows.length > 1 ? ' marchés' : ' marché') + ' · mis à jour le ' + jf(today);
+  list.innerHTML = rows.length ? rows.map((m,i) =>
+    '<li tabindex="0" data-i="'+i+'"><div class="t">'+esc(m.l)
+    + (m.on ? '<span class="badge now">Aujourd’hui</span>' : m.nx <= addDays(today,7) ? '<span class="badge soon">Bientôt</span>' : '')
+    + '</div><div>'+esc(m.n)+'</div><div class="m">'+esc(datesTxt(m))+(m.h?' · '+esc(m.h):'')+(m.r?' · '+esc(m.r):'')+'</div></li>').join('')
+    : '<li class="empty">Aucun marché pour cette sélection.</li>';
+  list.querySelectorAll('li[data-i]').forEach(li => {
+    const go = () => { const mk = markers[+li.dataset.i]; map.setView(mk.getLatLng(), 13); mk.openPopup(); };
+    li.addEventListener('click', go);
+    li.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  });
+  if (markers.length) map.fitBounds(L.featureGroup(markers).getBounds(), {padding:[30,30], maxZoom:12});
+}
+
+document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  render(b.dataset.f);
+}));
+
+count.textContent = 'Chargement des marchés…';
+fetch(CSV_URL, {cache:'no-store'}).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }).then(t => {
+  const [head, ...rows] = parseCSV(t);
+  const H = head.map(h => h.trim().toLowerCase());
+  const col = name => H.indexOf(name);
+  const g = (r, name) => { const i = col(name); return i < 0 ? '' : (r[i] || '').trim(); };
+  live = rows.map(r => ({
+    n: g(r,'nom'), l: g(r,'lieu'), r: g(r,'région'), h: g(r,'infos'), dates: g(r,'dates'),
+    c: [num(g(r,'latitude')), num(g(r,'longitude'))],
+    a: toIso(g(r,'début')), b: toIso(g(r,'fin')) || toIso(g(r,'début')), wd: parseJours(g(r,'jours'))
+  }))
+  .filter(m => m.n && m.a && m.b && isFinite(m.c[0]) && isFinite(m.c[1]))
+  .map(m => ({...m, nx: nextOpen(m)})).filter(m => m.nx)
+  .map(m => ({...m, on: openOn(m, today)}))
+  .sort((a,b) => a.nx.localeCompare(b.nx) || a.l.localeCompare(b.l));
+  render('all');
+}).catch(() => {
+  count.textContent = 'Impossible de charger la liste des marchés pour le moment.';
+});
+}
+</script>
+</body>
+</html>
