@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Marchés de Noël 2026 – La Liberté</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -57,6 +58,9 @@ li.more:hover{background:none}
 .pin::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--ll-white)}
 .pin.on{background:var(--ll-red)}
 .leaflet-marker-icon:hover .pin,.leaflet-marker-icon:focus .pin{transform:rotate(-45deg) scale(1.15)}
+.cluster{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:var(--ll-black);color:var(--ll-white);border:3px solid var(--ll-white);box-shadow:0 1px 5px rgba(0,0,0,.45);font:700 15px/1 var(--font-sans);box-sizing:border-box}
+.cluster.on{background:var(--ll-red)}
+.leaflet-marker-icon:hover .cluster,.leaflet-marker-icon:focus .cluster{transform:scale(1.1)}
 .leaflet-container{font-family:var(--font-sans);background:var(--ll-gray-300)}
 .ville{position:absolute;display:flex;align-items:center;gap:5px;transform:translate(-3px,-50%);white-space:nowrap;font:400 12px/1 var(--font-sans);color:var(--ll-gray-900);text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 4px #fff}
 .ville i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--ll-gray-900)}
@@ -99,6 +103,7 @@ li.more:hover{background:none}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script>
 /* Fond de carte : région FR + Broye-Vully, lacs, limites cantonales et de districts ([lat, lon]).
    Source : © swisstopo, swissBOUNDARIES3D 2026 et swissTLMRegio 2026 (données ouvertes). Simplifié à 50 m. */
@@ -186,7 +191,16 @@ map.on('blur', () => map.scrollWheelZoom.disable());
 const icon = on => L.divIcon({className:'', html:'<div class="pin'+(on?' on':'')+'"></div>', iconSize:[26,26], iconAnchor:[13,31], popupAnchor:[0,-30]});
 const popup = m => '<div class="pl">'+esc(m.l)+'</div><div class="pn">'+esc(m.n)+'</div><div class="d">'+esc(datesTxt(m))+(m.h?'<br>'+esc(m.h):'')+'</div>'
   + (m.on ? '<div><span class="badge now">Ouvert aujourd’hui</span></div>' : '');
-const layer = L.layerGroup().addTo(map);
+/* Regroupement des épingles proches en pastilles numérotées (rouges si un marché du groupe est ouvert aujourd'hui).
+   Un clic sur une pastille zoome dessus ; au zoom maximal, les épingles superposées s'écartent. */
+const layer = L.markerClusterGroup({
+  maxClusterRadius: 45, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+  iconCreateFunction: c => {
+    const n = c.getChildCount(), on = c.getAllChildMarkers().some(mk => mk.options.on), size = n < 10 ? 36 : 42;
+    return L.divIcon({className:'', iconSize:[size,size],
+      html:'<div class="cluster'+(on?' on':'')+'" aria-label="'+n+' marchés">'+n+'</div>'});
+  }
+}).addTo(map);
 const list = document.getElementById('list');
 const count = document.getElementById('count');
 let live = [];
@@ -200,7 +214,8 @@ let rows = [], markers = [], expanded = false;
 function render(f){
   layer.clearLayers();
   rows = live.filter(m => f === 'now' ? m.on : f === 'we' ? weDays.some(x => openOn(m,x)) : true);
-  markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l}).bindPopup(popup(m)).addTo(layer));
+  markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l, on: m.on}).bindPopup(popup(m)));
+  layer.addLayers(markers);
   count.textContent = rows.length + (rows.length > 1 ? ' marchés' : ' marché') + ' · mis à jour le ' + jf(today);
   expanded = false;
   drawList();
@@ -220,7 +235,7 @@ function drawList(){
     : '<li class="empty">Aucun marché pour cette sélection.</li>';
   list.querySelectorAll('li[data-i]').forEach(li => {
     const go = () => {
-      const mk = markers[+li.dataset.i]; map.setView(mk.getLatLng(), 12); mk.openPopup();
+      const mk = markers[+li.dataset.i]; layer.zoomToShowLayer(mk, () => mk.openPopup());
       if (mobile.matches) map.getContainer().scrollIntoView({behavior:'smooth', block:'start'});
     };
     li.addEventListener('click', go);

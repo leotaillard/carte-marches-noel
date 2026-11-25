@@ -13,6 +13,7 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte. Sur mobile, elle passe dessous et n'affiche que les 3 prochains marchés (`LIMITE_MOBILE`), le reste derrière un bouton.
 - Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « © swisstopo ».
 - Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py` depuis les données ouvertes swisstopo : swissBOUNDARIES3D (cantons, districts) et swissTLMRegio (lacs). Usage commercial autorisé avec mention de la source. Ne pas utiliser les limites de l'OFS (ThemaKart) : leur usage commercial demande une autorisation. Vue bornée à la région, zoom 9 à 13.
+- Épingles proches regroupées en pastilles numérotées (noires, rouges si un marché du groupe est ouvert aujourd'hui). Clic sur une pastille : zoom ; au zoom maximal, les épingles superposées s'écartent. Un clic dans la liste ouvre le marché même s'il est dans une pastille.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
 
 ## Structure
@@ -60,7 +61,7 @@ Polices : sous licence commerciale. Ne jamais copier les fichiers .woff2 dans ce
 
 ## Contraintes
 
-- Garder un seul fichier `index.html`, sans dépendance à installer. Leaflet 1.9.4 via cdnjs.
+- Garder un seul fichier `index.html`, sans dépendance à installer. Leaflet 1.9.4 et Leaflet.markercluster 1.5.3 via cdnjs (la 2.x vise Leaflet 2).
 - Tout texte venant de la feuille passe par `esc()` avant d'entrer dans le HTML.
 - Pas de suivi ni de cookies ajoutés.
 - Accessibilité : boutons au clavier, focus visible, `aria-pressed` sur les filtres.
