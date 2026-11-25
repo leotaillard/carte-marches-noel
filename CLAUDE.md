@@ -28,8 +28,8 @@ README.md                               mise en ligne et intégration
 ## Source des données
 
 - Google Sheet : https://docs.google.com/spreadsheets/d/1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg/edit
-- Onglet lu : `Saisie` (via `CSV_URL` en haut du script). La feuille est partagée en lecture par lien.
-- En production, remplacer `CSV_URL` par l'URL « Publier sur le web » (onglet Saisie, format CSV) : Google la met en cache, plus robuste pour un article à fort trafic.
+- Onglet lu : `Saisie`, via son adresse « Publier sur le web » au format CSV (`CSV_URL` en haut du script). Google la met en cache environ 5 minutes : elle tient la charge, et une modification de la feuille apparaît sur la carte après quelques minutes.
+- Si l'onglet change de nom ou si la publication est retirée, la carte affiche « Impossible de charger la liste des marchés ». Republier l'onglet Saisie et mettre à jour `CSV_URL` si l'adresse change.
 
 Colonnes lues par nom d'en-tête (insensible à la casse) :
 

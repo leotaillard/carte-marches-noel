@@ -112,11 +112,11 @@ const FOND = {"region":[[[[46.4784,6.9758],[46.4845,6.9727],[46.4887,6.9724],[46
 <script>
 {
 /* ===== SOURCE DES DONNÉES =====
-   La carte lit l'onglet « Saisie » de la Google Sheet à chaque ouverture.
-   La feuille doit être partagée en lecture (« Tous les utilisateurs disposant du lien »).
-   En production, préférer l'URL CSV de « Fichier > Partager > Publier sur le web » (onglet Saisie, format CSV). */
-const SHEET_ID = '1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg';
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=Saisie';
+   CSV « Publier sur le web » de l'onglet « Saisie » de la Google Sheet
+   (https://docs.google.com/spreadsheets/d/1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg/edit).
+   Google met cette adresse en cache (environ 5 minutes) : elle tient la charge d'un article très lu.
+   Une modification de la feuille apparaît sur la carte après quelques minutes. */
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2FmFTh8EbPBgTSJujTezrjF8arPgSO7fzgT9b2Vw7diEWC9XIFCwVkfX9MdE4_yzGq5ijetdTniib/pub?output=csv';
 
 /* Colonnes lues (par nom d'en-tête) : Nom, Lieu, Région, Latitude, Longitude, Début, Fin, Dates, Infos
    Colonne facultative « Jours » : jours d'ouverture, ex. « ven,sam,dim » ou « mar-dim ». Vide = tous les jours. */

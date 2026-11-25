@@ -4,7 +4,7 @@ Carte interactive des marchés de Noël du canton de Fribourg et de la Broye vau
 
 ## Mettre à jour les marchés
 
-Tout se fait dans la [Google Sheet](https://docs.google.com/spreadsheets/d/1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg/edit), onglet **Saisie**. Une ligne par marché. La carte est à jour au prochain chargement de la page, sans republier le site.
+Tout se fait dans la [Google Sheet](https://docs.google.com/spreadsheets/d/1EfNcVvLC9w1iIyrNCNuGf_QXUBpfxSI1FY-ZHU2UMDg/edit), onglet **Saisie**. Une ligne par marché. La carte lit l'onglet publié sur le web au format CSV : une modification apparaît après quelques minutes, sans republier le site. L'onglet doit rester publié (Fichier > Partager > Publier sur le web).
 
 ## Publier sur GitHub Pages
 
