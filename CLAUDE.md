@@ -51,12 +51,12 @@ Relevée sur le site le 25.11.2026. Tokens dans `:root` de `index.html`.
 
 - Rouge : `#E21B22` (surtitres, accents, « ouvert aujourd'hui »), rouge clair `#F4353C`.
 - Noir `#000` pour le texte ; gris `#7D7D7D` (secondaire), `#DBDBDB` et `#E8E8E8` (filets), `#F2F2F2` (fonds).
-- GT Ultra Median 700 : uniquement pour le grand titre (h1), letter-spacing ≈ -0.03em (H1 article : 42/46 px).
-- Forme Grotesque Pro 400/700 pour tout le reste, y compris les noms de lieux dans la liste et les infobulles (chapeau : 23/32 px).
+- Pas de titre dans la carte : l'article porte déjà le sien. GT Ultra Median (titres du site) n'est donc pas utilisé.
+- Forme Grotesque Pro 400/700 pour tout le texte de la carte, y compris les noms de lieux dans la liste et les infobulles.
 - Texte courant : FK Roman Standard 400 (19/28 px). Pas utilisé dans la carte.
 - Convention de titre : surtitre en rouge suivi du titre en noir. Toujours une ponctuation à la fin du surtitre (point ou deux-points).
 
-Polices : sous licence commerciale. Ne jamais copier les fichiers .woff2 dans ce dépôt. Le CSS les référence sur `https://www.laliberte.ch/fonts/…` ; elles ne se chargent que si la page est servie depuis laliberte.ch ou si le site autorise le CORS sur `/fonts/`. Sinon, les replis s'appliquent (Georgia pour les titres, Inter pour le reste).
+Polices : sous licence commerciale. Ne jamais copier les fichiers .woff2 dans ce dépôt. Le CSS les référence sur `https://www.laliberte.ch/fonts/…` ; elles ne se chargent que si la page est servie depuis laliberte.ch ou si le site autorise le CORS sur `/fonts/`. Sinon, Inter s'applique en repli.
 
 ## Contraintes
 
