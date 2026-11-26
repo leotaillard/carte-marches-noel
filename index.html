@@ -63,6 +63,8 @@ li.more:hover{background:none}
 .cluster{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:var(--ll-black);color:var(--ll-white);border:3px solid var(--ll-white);box-shadow:0 1px 5px rgba(0,0,0,.45);font:700 15px/1 var(--font-sans);box-sizing:border-box}
 .cluster.on{background:var(--ll-red)}
 .leaflet-marker-icon:hover .cluster,.leaflet-marker-icon:focus .cluster{transform:scale(1.1)}
+.leaflet-tooltip.etiq{background:transparent;border:0;box-shadow:none;padding:0 0 0 2px;font:700 12px/1.1 var(--font-sans);color:var(--ll-black);text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 4px #fff,0 0 4px #fff}
+.leaflet-tooltip.etiq::before{display:none}
 .leaflet-container{font-family:var(--font-sans);background:var(--ll-gray-300)}
 .ville{position:absolute;display:flex;align-items:center;gap:5px;transform:translate(-3px,-50%);white-space:nowrap;font:400 12px/1 var(--font-sans);color:var(--ll-gray-900);text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 4px #fff}
 .ville i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--ll-gray-900)}
@@ -195,12 +197,15 @@ L.polygon(FOND.region, {...vec, stroke:false, fillColor:'#fff', fillOpacity:1}).
 L.polyline(FOND.districts, {...vec, color:'#C4C4C4', weight:1}).addTo(map);
 L.polyline(FOND.cantons, {...vec, color:'#7D7D7D', weight:1.5, lineJoin:'round'}).addTo(map);
 L.polygon(FOND.lacs, {...vec, stroke:false, fillColor:'#C9D7E0', fillOpacity:1}).addTo(map);
-/* Chefs-lieux des districts. Seuls repères nommés sur la carte. */
+/* Noms de localités. Un nom est masqué quand un marché visible tout près porte déjà ce nom (voir majVilles). */
 map.createPane('villes').style.zIndex = 450;
-[['Fribourg',46.8060,7.1620,1],['Bulle',46.6195,7.0567],['Romont',46.6966,6.9186],['Estavayer',46.8489,6.8466],
+const villes = [];
+const ville = (n, la, lo, cls) => { const mk = L.marker([la,lo], {pane:'villes', interactive:false, keyboard:false, nom:n,
+  icon: L.divIcon({className:'', iconSize:[0,0], html:'<div class="ville'+(cls?' '+cls:'')+'"><i></i>'+esc(n)+'</div>'})}); villes.push(mk); return mk; };
+/* Chefs-lieux des districts, toujours affichés. */
+[['Fribourg',46.8060,7.1620,'main'],['Bulle',46.6195,7.0567],['Romont',46.6966,6.9186],['Estavayer',46.8489,6.8466],
  ['Morat',46.9283,7.1175],['Tavel',46.8269,7.2033],['Châtel-St-Denis',46.5266,6.9006],['Payerne',46.8211,6.9378]]
-.forEach(([n,la,lo,main]) => L.marker([la,lo], {pane:'villes', interactive:false, keyboard:false,
-  icon: L.divIcon({className:'', iconSize:[0,0], html:'<div class="ville'+(main?' main':'')+'"><i></i>'+n+'</div>'})}).addTo(map));
+.forEach(([n,la,lo,cls]) => ville(n,la,lo,cls).addTo(map));
 map.on('focus', () => map.scrollWheelZoom.enable());
 map.on('blur', () => map.scrollWheelZoom.disable());
 const icon = on => L.divIcon({className:'', html:'<div class="pin'+(on?' on':'')+'"></div>', iconSize:[26,26], iconAnchor:[13,31], popupAnchor:[0,-30]});
@@ -229,13 +234,38 @@ let rows = [], markers = [], expanded = false;
 function render(f){
   layer.clearLayers();
   rows = live.filter(m => f === 'now' ? m.on : f === 'we' ? weDays.some(x => openOn(m,x)) : true);
-  markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l, on: m.on}).bindPopup(popup(m)));
+  markers = rows.map(m => L.marker(m.c, {icon: icon(m.on), title: m.l, on: m.on}).bindPopup(popup(m))
+    .bindTooltip(esc(m.l), {permanent:true, direction:'right', offset:[12,-17], className:'etiq'}));
   layer.addLayers(markers);
   count.textContent = rows.length + (rows.length > 1 ? ' marchés' : ' marché') + ' · mis à jour le ' + jf(today);
   expanded = false;
   drawList();
   if (markers.length) map.fitBounds(L.featureGroup(markers).getBounds(), {padding:[30,30], maxZoom:12});
+  majVilles();
 }
+
+/* Masque le nom d'une localité quand une épingle visible (hors pastille) à moins de 3 km porte un lieu
+   qui commence par ce nom, par exemple « Fribourg, Arsen'alt » près de « Fribourg ». */
+const norme = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\bst-/g, 'saint-');
+function majVilles(){
+  const vus = markers.filter(mk => layer.getVisibleParent(mk) === mk);
+  villes.forEach(v => {
+    const el = v.getElement(); if (!el) return;
+    const n = norme(v.options.nom), p = v.getLatLng();
+    el.style.visibility = vus.some(mk => norme(mk.options.title).startsWith(n) && mk.getLatLng().distanceTo(p) < 3000) ? 'hidden' : '';
+  });
+  /* Noms de marchés qui se chevauchent : seul le marché le plus proche dans le temps (ordre de la liste) garde le sien. */
+  const pris = [];
+  vus.forEach(mk => {
+    const el = mk.getTooltip() && mk.getTooltip().getElement(); if (!el) return;
+    el.style.visibility = '';
+    const r = el.getBoundingClientRect();
+    const gene = pris.some(q => r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top);
+    if (gene) el.style.visibility = 'hidden'; else pris.push(r);
+  });
+}
+map.on('zoomend moveend', majVilles);
+layer.on('animationend spiderfied unspiderfied', majVilles);
 
 function drawList(){
   const short = mobile.matches && rows.length > LIMITE_MOBILE + 1;
