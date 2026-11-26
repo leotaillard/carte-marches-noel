@@ -46,9 +46,9 @@ Colonnes lues par nom d'en-tête (insensible à la casse) :
 | Infos | texte | horaires, lieu précis |
 | Jours | facultatif, ex. `ven-dim`, `mar-dim`, `sam,dim` | jours d'ouverture ; vide = tous les jours |
 
-La colonne `Jours` est en L de l'onglet Saisie (Gruyères `ven-dim`, Golf de Payerne `mar-dim`). L'onglet `Carte` (Datawrapper) ne la lit pas. L'onglet `Mode d'emploi` explique comment la remplir.
+La colonne `Jours` est en L de l'onglet Saisie (Gruyères `ven-dim`, Golf de Payerne `mar-dim`). L'onglet `Mode d'emploi` explique comment la remplir.
 
-Les colonnes `Statut` et `Ligne active` de la feuille servent à Datawrapper ; la page les ignore.
+Datawrapper n'est plus utilisé. L'onglet `Carte` et les colonnes `Statut` et `Ligne active` lui servaient ; la page les ignore. Comme la page lit les colonnes par leur nom, les supprimer ou les déplacer ne la casse pas. Seul l'onglet `Saisie` doit rester publié.
 
 ## Identité graphique laliberte.ch
 
