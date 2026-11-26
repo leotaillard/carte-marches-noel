@@ -15,6 +15,8 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py` depuis les données ouvertes swisstopo : swissBOUNDARIES3D (cantons, districts) et swissTLMRegio (lacs). Usage commercial autorisé avec mention de la source. Ne pas utiliser les limites de l'OFS (ThemaKart) : leur usage commercial demande une autorisation. Vue bornée à la région, zoom 9 à 13.
 - Épingles proches regroupées en pastilles numérotées (noires, rouges si un marché du groupe est ouvert aujourd'hui). Clic sur une pastille : zoom ; au zoom maximal, les épingles superposées s'écartent. Un clic dans la liste ouvre le marché même s'il est dans une pastille.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
+- Écrans tactiles (`pointer: coarse`) : glisser à un doigt désactivé sur la carte pour laisser défiler l'article ; deux doigts déplacent et zooment, avec un message d'aide.
+- Dans une iframe, la page envoie sa hauteur à l'article (`postMessage`, type `ll-carte-noel-hauteur`). Le script d'intégration du README ajuste l'iframe, sans défilement interne.
 
 ## Structure
 

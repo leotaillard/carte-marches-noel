@@ -22,16 +22,41 @@ La carte est ensuite en ligne à l'adresse `https://<compte>.github.io/carte-mar
 
 ## Intégrer dans l'article
 
-Bloc HTML du CMS :
+Bloc HTML du CMS (recommandé) :
 
 ```html
-<iframe src="https://<compte>.github.io/carte-marches-noel/"
-        title="Carte des marchés de Noël"
-        style="width:100%;height:640px;border:0"
+<style>
+  .ll-carte-noel{width:100%;height:640px;border:0;display:block}
+  @media (max-width:700px){.ll-carte-noel{height:850px}}
+</style>
+<iframe class="ll-carte-noel"
+        src="https://leotaillard.github.io/carte-marches-noel/"
+        title="Carte des marchés de Noël du canton de Fribourg et de la Broye"
+        loading="lazy"></iframe>
+<script>
+window.addEventListener('message', function (e) {
+  if (e.origin !== 'https://leotaillard.github.io' || !e.data || e.data.type !== 'll-carte-noel-hauteur') return;
+  document.querySelectorAll('iframe.ll-carte-noel').forEach(function (f) {
+    if (f.contentWindow === e.source) f.style.height = e.data.hauteur + 'px';
+  });
+});
+</script>
+```
+
+La carte envoie sa hauteur à l'article, et le script ajuste l'iframe : plus de défilement à l'intérieur de l'iframe sur mobile, même quand la liste est dépliée. Sur ordinateur, la hauteur reste 640 px.
+
+Si le CMS refuse les balises `<style>` ou `<script>`, utiliser une hauteur fixe. Sur mobile, déplier la liste fera alors défiler l'intérieur de l'iframe.
+
+```html
+<iframe src="https://leotaillard.github.io/carte-marches-noel/"
+        title="Carte des marchés de Noël du canton de Fribourg et de la Broye"
+        style="width:100%;height:850px;border:0;display:block"
         loading="lazy"></iframe>
 ```
 
-Sur mobile, la carte et la liste s'empilent. La liste n'affiche que les trois prochains marchés, avec un bouton pour voir les autres : prévoir environ 830 px de hauteur. Le nombre se règle avec `LIMITE_MOBILE` dans le script.
+Sur mobile, la carte et la liste s'empilent. La liste n'affiche que les trois prochains marchés, avec un bouton pour voir les autres. Le nombre se règle avec `LIMITE_MOBILE` dans le script.
+
+Sur écran tactile, un doigt fait défiler l'article et deux doigts déplacent ou zooment la carte. Un message l'indique si le lecteur glisse à un doigt sur la carte.
 
 ## À savoir
 

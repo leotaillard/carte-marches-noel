@@ -31,7 +31,9 @@
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0;height:100%;background:var(--ll-white);color:var(--ll-black);font:16px/1.45 var(--font-sans);-webkit-font-smoothing:antialiased}
 .wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%;min-height:540px}
-#map{height:100%;min-height:420px;background:var(--ll-gray-300)}
+#map{position:relative;height:100%;min-height:420px;background:var(--ll-gray-300)}
+.geste{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;background:rgba(0,0,0,.5);color:var(--ll-white);font:700 17px/1.3 var(--font-sans);opacity:0;pointer-events:none;transition:opacity .2s}
+.geste.on{opacity:1}
 aside{border-left:1px solid var(--ll-gray-200);display:flex;flex-direction:column;min-height:0}
 .head{padding:16px 18px 14px;border-bottom:1px solid var(--ll-gray-200)}
 #count{margin:0 0 12px;color:var(--ll-gray-500);font-size:14px}
@@ -172,8 +174,21 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 /* ===== CARTE ===== */
 /* Fond épuré, sans tuiles : région en blanc, limites de districts et de cantons, lacs, chefs-lieux.
    Géométries dans FOND (script plus haut), tirées des données ouvertes swisstopo (outils/fond-carte.py). */
-const map = L.map('map', {scrollWheelZoom:false, zoomSnap:0.5, minZoom:9, maxZoom:13,
+/* Écrans tactiles : un doigt fait défiler l'article, deux doigts déplacent et zooment la carte. */
+const tactile = matchMedia('(pointer: coarse)').matches;
+const map = L.map('map', {scrollWheelZoom:false, dragging:!tactile, zoomSnap:0.5, minZoom:9, maxZoom:13,
   maxBounds:[[46.30,6.45],[47.20,7.65]], maxBoundsViscosity:0.8}).setView([46.72, 7.03], 10);
+if (tactile) {
+  const geste = document.createElement('div');
+  geste.className = 'geste'; geste.setAttribute('aria-hidden', 'true');
+  geste.textContent = 'Utilisez deux doigts pour déplacer la carte';
+  map.getContainer().appendChild(geste);
+  let t;
+  map.getContainer().addEventListener('touchmove', e => {
+    if (e.touches.length === 1) { geste.classList.add('on'); clearTimeout(t); t = setTimeout(() => geste.classList.remove('on'), 1200); }
+    else geste.classList.remove('on');
+  }, {passive:true});
+}
 map.attributionControl.setPrefix(false).addAttribution('© <a href="https://www.swisstopo.admin.ch/" target="_blank" rel="noopener">swisstopo</a>');
 const vec = {interactive:false};
 L.polygon(FOND.region, {...vec, stroke:false, fillColor:'#fff', fillOpacity:1}).addTo(map);
@@ -249,6 +264,17 @@ function drawList(){
   });
 }
 mobile.addEventListener('change', drawList);
+
+/* Intégration : la page envoie sa hauteur à l'article, qui ajuste l'iframe (voir README).
+   Plus de défilement à l'intérieur de l'iframe, même quand la liste est dépliée. */
+if (parent !== window) {
+  const wrap = document.querySelector('.wrap');
+  let last = 0;
+  new ResizeObserver(() => {
+    const h = Math.ceil(wrap.getBoundingClientRect().height);
+    if (Math.abs(h - last) > 1) { last = h; parent.postMessage({type:'ll-carte-noel-hauteur', hauteur:h}, '*'); }
+  }).observe(wrap);
+}
 
 document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));
