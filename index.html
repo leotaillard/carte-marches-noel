@@ -181,7 +181,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
    Géométries dans FOND (script plus haut), tirées des données ouvertes swisstopo (outils/fond-carte.py). */
 /* Écrans tactiles : un doigt fait défiler l'article, deux doigts déplacent et zooment la carte. */
 const tactile = matchMedia('(pointer: coarse)').matches;
-const map = L.map('map', {scrollWheelZoom:false, dragging:!tactile, zoomSnap:0.5, minZoom:9, maxZoom:13,
+const map = L.map('map', {scrollWheelZoom:false, dragging:!tactile, zoomSnap:0.5, minZoom:9, maxZoom:16,
   maxBounds:[[46.30,6.45],[47.20,7.65]], maxBoundsViscosity:0.8}).setView([46.72, 7.03], 10);
 if (tactile) {
   const geste = document.createElement('div');
@@ -198,7 +198,7 @@ map.attributionControl.setPrefix(false).addAttribution('© <a href="https://www.
 const vec = {interactive:false};
 L.polygon(FOND.region, {...vec, stroke:false, fillColor:'#fff', fillOpacity:1}).addTo(map);
 L.polygon(FOND.bati, {...vec, stroke:false, fillColor:'#E4E4E4', fillOpacity:1}).addTo(map);
-L.polyline(FOND.districts, {...vec, color:'#C4C4C4', weight:1}).addTo(map);
+const districts = L.polyline(FOND.districts, {...vec, color:'#C4C4C4', weight:1}).addTo(map);
 const routes = L.layerGroup([
   L.polyline(FOND.routes.h, {...vec, color:'#B8B8B8', weight:1.6}),
   L.polyline(FOND.routes.a, {...vec, color:'#8C8C8C', weight:2.4})]).addTo(map);
@@ -208,6 +208,10 @@ L.polygon(FOND.lacs, {...vec, stroke:false, fillColor:'#C9D7E0', fillOpacity:1})
 map.createPane('relief').style.zIndex = 402;
 map.getPane('relief').style.mixBlendMode = 'multiply';
 L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.leichte-basiskarte_reliefschattierung/default/current/3857/{z}/{x}/{y}.png', {pane:'relief', opacity:0.35}).addTo(map);
+/* Rues swisstopo (swissTLM3D, sans noms) passées en gris, dès le zoom 12. */
+map.createPane('rues').style.zIndex = 405;
+map.getPane('rues').style.filter = 'grayscale(1) contrast(1.15)';
+L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swisstlm3d-strassen/default/current/3857/{z}/{x}/{y}.png', {pane:'rues', minZoom:12, opacity:0.75}).addTo(map);
 /* Noms de localités. Un nom est masqué quand un marché visible tout près porte déjà ce nom (voir majVilles). */
 map.createPane('villes').style.zIndex = 450;
 const villes = [];
@@ -221,6 +225,8 @@ const ville = (n, la, lo, cls) => { const mk = L.marker([la,lo], {pane:'villes',
 const loc1 = L.layerGroup(FOND.villes.filter(v => v[3] === 1).map(([n,la,lo]) => ville(n,la,lo,'petite')));
 const loc2 = L.layerGroup(FOND.villes.filter(v => v[3] === 2).map(([n,la,lo]) => ville(n,la,lo,'petite')));
 const selonZoom = () => { const z = map.getZoom();
+  z >= 13 ? routes.remove() : routes.addTo(map);        // les rues swisstopo prennent le relais
+  z >= 14 ? districts.remove() : districts.addTo(map);  // limites simplifiées à 50 m, imprécises de près
   z >= 10.5 ? loc1.addTo(map) : loc1.remove();
   z >= 12 ? loc2.addTo(map) : loc2.remove(); };
 map.on('zoomend', selonZoom); selonZoom();
@@ -298,7 +304,11 @@ function drawList(){
     : '<li class="empty">Aucun marché pour cette sélection.</li>';
   list.querySelectorAll('li[data-i]').forEach(li => {
     const go = () => {
-      const mk = markers[+li.dataset.i]; layer.zoomToShowLayer(mk, () => mk.openPopup());
+      const mk = markers[+li.dataset.i];
+      layer.zoomToShowLayer(mk, () => {   // sort le marché de sa pastille, puis zoome jusqu'aux rues
+        if (map.getZoom() < 14) { map.once('moveend', () => mk.openPopup()); map.setView(mk.getLatLng(), 14); }
+        else mk.openPopup();
+      });
       if (mobile.matches) map.getContainer().scrollIntoView({behavior:'smooth', block:'start'});
     };
     li.addEventListener('click', go);
