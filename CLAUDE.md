@@ -46,6 +46,8 @@ Colonnes lues par nom d'en-tête (insensible à la casse) :
 | Infos | texte | horaires, lieu précis |
 | Jours | facultatif, ex. `ven-dim`, `mar-dim`, `sam,dim` | jours d'ouverture ; vide = tous les jours |
 
+La colonne `Jours` est en L de l'onglet Saisie (Gruyères `ven-dim`, Golf de Payerne `mar-dim`). L'onglet `Carte` (Datawrapper) ne la lit pas. L'onglet `Mode d'emploi` explique comment la remplir.
+
 Les colonnes `Statut` et `Ligne active` de la feuille servent à Datawrapper ; la page les ignore.
 
 ## Identité graphique laliberte.ch
@@ -80,6 +82,5 @@ Voir README.md. En bref : dépôt GitHub public, Pages sur la branche `main`, do
 
 ## Pistes ouvertes
 
-- Ajouter la colonne `Jours` dans la feuille : Gruyères `ven-dim`, Golf de Payerne `mar-dim`.
 - Vérifier les coordonnées : vallée du Gottéron, Arsen'alt, Golf de Payerne, château de Montet.
 - Variante avec les routes, mise de côté sur la branche `variante-rues` (non publiée) : couche swisstopo swissTLM3D Strassen au-dessus du fond épuré, zoom jusqu'à 16. À reprendre : passer les routes en gris (couleurs swisstopo hors charte) et des lacs plus fins pour les zooms rapprochés.
