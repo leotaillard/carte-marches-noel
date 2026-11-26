@@ -11,8 +11,12 @@ Projet de Léo (Labo Digital, St-Paul Médias). Langue du projet, des commits et
 - Les données viennent d'une Google Sheet, lue à chaque ouverture de la page (CSV).
 - La page n'affiche que les marchés en cours ou à venir, d'après la date du lecteur. Les marchés passés disparaissent seuls.
 - Filtres : Tous / Aujourd'hui / Ce week-end. Liste cliquable à côté de la carte. Sur mobile, elle passe dessous et n'affiche que les 3 prochains marchés (`LIMITE_MOBILE`), le reste derrière un bouton.
-- Fond de carte épuré, sans tuiles ni noms de lieux : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) et de districts (gris clair). Seuls repères nommés : les chefs-lieux de district, Fribourg en gras. Attribution : « © swisstopo ».
-- Géométries intégrées dans `index.html` (constante `FOND`), générées par `outils/fond-carte.py` depuis les données ouvertes swisstopo : swissBOUNDARIES3D (cantons, districts) et swissTLMRegio (lacs). Usage commercial autorisé avec mention de la source. Ne pas utiliser les limites de l'OFS (ThemaKart) : leur usage commercial demande une autorisation. Vue bornée à la région, zoom 9 à 13.
+- Fond de carte épuré, en trois niveaux selon le zoom (variantes A, C et D retenues le 26.11.2026) :
+  - toujours : région FR + Broye-Vully en blanc, reste en gris, lacs en gris-bleu, limites cantonales (gris foncé) ; nom de chaque marché à côté de son épingle ;
+  - vue régionale : zones bâties en gris clair, autoroutes et routes principales, limites de districts, relief swisstopo en ombrage léger, chefs-lieux nommés (Fribourg en gras), grandes localités dès le zoom 10,5, autres dès 12 ;
+  - zoom rapproché : rues swisstopo (swissTLM3D Strassen, sans noms) passées en gris dès le zoom 12 ; routes vectorielles masquées dès 13, limites de districts dès 14. Zoom 9 à 16 ; un clic dans la liste zoome au moins à 14.
+- Noms sur la carte, par priorité : marchés visibles (ordre de la liste), chefs-lieux, autres localités. Un nom qui en chevauche un autre est masqué, de même qu'une localité quand un marché visible à moins de 3 km porte un lieu qui commence par son nom.
+- Géométries intégrées dans `index.html` (constante `FOND`, environ 200 Ko), générées par `outils/fond-carte.py` depuis les données ouvertes swisstopo : swissBOUNDARIES3D (cantons, districts) et swissTLMRegio (lacs, zones bâties, routes, localités). Relief et rues : tuiles WMTS swisstopo (wmts.geo.admin.ch). Usage commercial autorisé avec mention « © swisstopo ». Ne pas utiliser les limites de l'OFS (ThemaKart) : leur usage commercial demande une autorisation. Vue bornée à la région.
 - Épingles proches regroupées en pastilles numérotées (noires, rouges si un marché du groupe est ouvert aujourd'hui). Clic sur une pastille : zoom ; au zoom maximal, les épingles superposées s'écartent. Un clic dans la liste ouvre le marché même s'il est dans une pastille.
 - Hébergement : GitHub Pages, puis intégration en iframe dans l'article.
 - Écrans tactiles (`pointer: coarse`) : glisser à un doigt désactivé sur la carte pour laisser défiler l'article ; deux doigts déplacent et zooment, avec un message d'aide.
@@ -72,7 +76,7 @@ Polices : sous licence commerciale. Ne jamais copier les fichiers .woff2 dans ce
 
 ## Tester
 
-- Ouvrir `index.html` directement dans Chrome : le fond est intégré, il s'affiche aussi en `file://`.
+- Ouvrir `index.html` directement dans Chrome : le fond est intégré, il s'affiche aussi en `file://` (relief et rues demandent une connexion).
 - Simuler une autre date : `index.html?date=2026-12-12`.
 - Serveur local si besoin : `python3 -m http.server 8000`.
 
@@ -83,4 +87,4 @@ Voir README.md. En bref : dépôt GitHub public, Pages sur la branche `main`, do
 ## Pistes ouvertes
 
 - Vérifier les coordonnées : vallée du Gottéron, Arsen'alt, Golf de Payerne, château de Montet.
-- Variante avec les routes, mise de côté sur la branche `variante-rues` (non publiée) : couche swisstopo swissTLM3D Strassen au-dessus du fond épuré, zoom jusqu'à 16. À reprendre : passer les routes en gris (couleurs swisstopo hors charte) et des lacs plus fins pour les zooms rapprochés.
+- Branches `variante-rues` et `variantes-carte` : essais antérieurs, dépassés par la version en ligne (A + C + D).

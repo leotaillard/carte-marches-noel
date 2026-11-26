@@ -61,5 +61,5 @@ Sur écran tactile, un doigt fait défiler l'article et deux doigts déplacent o
 ## À savoir
 
 - **Polices** : la police du site (Forme Grotesque Pro) est sous licence et n'est pas incluse. Sur github.io, elle peut ne pas se charger : Inter la remplace. Pour l'identité complète, héberger la page sur le domaine laliberte.ch, ou demander à l'équipe web d'autoriser le CORS sur `/fonts/` pour l'adresse de la carte.
-- **Fond de carte** : © swisstopo (swissBOUNDARIES3D et swissTLMRegio, données ouvertes, usage commercial autorisé avec mention de la source). Les contours sont intégrés dans la page. Pour les régénérer (nouvelle année, autre zone), voir `outils/fond-carte.py`.
+- **Fond de carte** : © swisstopo, données ouvertes, usage commercial autorisé avec mention de la source. Contours, zones bâties, routes et localités (swissBOUNDARIES3D, swissTLMRegio) sont intégrés dans la page ; pour les régénérer (nouvelle année, autre zone), voir `outils/fond-carte.py`. Le relief et les rues sont des tuiles swisstopo chargées à l'affichage.
 - **Tester une date** : ajouter `?date=2026-12-12` à l'adresse.
