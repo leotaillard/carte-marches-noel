@@ -172,7 +172,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 /* ===== CARTE ===== */
 /* Fond épuré, sans tuiles : région en blanc, limites de districts et de cantons, lacs, chefs-lieux.
    Géométries dans FOND (script plus haut), tirées des données ouvertes swisstopo (outils/fond-carte.py). */
-const map = L.map('map', {scrollWheelZoom:false, zoomSnap:0.5, minZoom:9, maxZoom:13,
+const map = L.map('map', {scrollWheelZoom:false, zoomSnap:0.5, minZoom:9, maxZoom:16,
   maxBounds:[[46.30,6.45],[47.20,7.65]], maxBoundsViscosity:0.8}).setView([46.72, 7.03], 10);
 map.attributionControl.setPrefix(false).addAttribution('© <a href="https://www.swisstopo.admin.ch/" target="_blank" rel="noopener">swisstopo</a>');
 const vec = {interactive:false};
@@ -180,6 +180,10 @@ L.polygon(FOND.region, {...vec, stroke:false, fillColor:'#fff', fillOpacity:1}).
 L.polyline(FOND.districts, {...vec, color:'#C4C4C4', weight:1}).addTo(map);
 L.polyline(FOND.cantons, {...vec, color:'#7D7D7D', weight:1.5, lineJoin:'round'}).addTo(map);
 L.polygon(FOND.lacs, {...vec, stroke:false, fillColor:'#C9D7E0', fillOpacity:1}).addTo(map);
+/* VARIANTE : routes swisstopo (couches transparentes, sans noms), au-dessus du fond épuré. */
+map.createPane('routes').style.zIndex = 405;
+const ROUTES = 'https://wmts.geo.admin.ch/1.0.0/{l}/default/current/3857/{z}/{x}/{y}.png';
+L.tileLayer(ROUTES, {l:'ch.swisstopo.swisstlm3d-strassen', pane:'routes', minZoom:9, maxZoom:16, opacity:0.85}).addTo(map);
 /* Chefs-lieux des districts. Seuls repères nommés sur la carte. */
 map.createPane('villes').style.zIndex = 450;
 [['Fribourg',46.8060,7.1620,1],['Bulle',46.6195,7.0567],['Romont',46.6966,6.9186],['Estavayer',46.8489,6.8466],
