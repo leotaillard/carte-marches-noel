@@ -80,3 +80,4 @@ Voir README.md. En bref : dépôt GitHub public, Pages sur la branche `main`, do
 
 - Ajouter la colonne `Jours` dans la feuille : Gruyères `ven-dim`, Golf de Payerne `mar-dim`.
 - Vérifier les coordonnées : vallée du Gottéron, Arsen'alt, Golf de Payerne, château de Montet.
+- Variante avec les routes, mise de côté sur la branche `variante-rues` (non publiée) : couche swisstopo swissTLM3D Strassen au-dessus du fond épuré, zoom jusqu'à 16. À reprendre : passer les routes en gris (couleurs swisstopo hors charte) et des lacs plus fins pour les zooms rapprochés.
