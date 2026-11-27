@@ -86,9 +86,9 @@ li.more:hover{background:none}
 .barre .filters{gap:6px}
 .barre .filters button{border-color:transparent;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 #count{margin:0;padding:7px 11px;background:rgba(255,255,255,.94);border-radius:999px;font-size:13px;line-height:1.2;color:var(--ll-gray-900);box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.carrousel{position:absolute;left:0;right:0;bottom:12px;z-index:1001;display:flex;gap:10px;margin:0;padding:6px max(16px, calc(50% - 150px));list-style:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.carrousel{--lc:min(300px, calc(100vw - 64px));position:absolute;left:0;right:0;bottom:12px;z-index:1001;display:flex;gap:10px;margin:0;padding:6px calc((100vw - var(--lc)) / 2);list-style:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
 .carrousel::-webkit-scrollbar{display:none}
-.carte{flex:0 0 min(300px,calc(100% - 64px));scroll-snap-align:center;scroll-snap-stop:always;height:112px;padding:11px 14px;border:2px solid transparent;border-radius:8px;background:var(--ll-white);box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer;overflow:hidden}
+.carte{flex:0 0 var(--lc);scroll-snap-align:center;scroll-snap-stop:always;height:112px;padding:11px 14px;border:2px solid transparent;border-radius:8px;background:var(--ll-white);box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer;overflow:hidden}
 .carte:hover{border-color:var(--ll-gray-300);background:var(--ll-white)}
 .carte.actif:hover{border-color:var(--ll-black)}
 .carte.actif{border-color:var(--ll-black)}
@@ -98,6 +98,9 @@ li.more:hover{background:none}
 .carte .t .badge{margin:0;flex:none}
 .carte .n{margin-top:3px;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .carte .m{margin-top:4px;font-size:13px;line-height:1.3;color:var(--ll-gray-500);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.carrousel.saisi{scroll-snap-type:none;cursor:grabbing;user-select:none}
+.carrousel.saisi .carte{cursor:grabbing}
+@media (hover:hover) and (pointer:fine){.carte{cursor:grab}}
 .carte.vide{cursor:default;color:var(--ll-gray-500);display:flex;align-items:center}
 .fleche{position:absolute;bottom:56px;z-index:1002;width:36px;height:36px;border:0;border-radius:50%;background:var(--ll-white);color:var(--ll-black);box-shadow:0 1px 5px rgba(0,0,0,.3);font:700 18px/1 var(--font-sans);cursor:pointer;display:none}
 .fleche.g{left:6px}.fleche.d{right:6px}
@@ -385,6 +388,34 @@ list.addEventListener('scroll', () => {
 const pas = dir => { const c = list.querySelector('.carte'); list.scrollBy({left: dir * (c ? c.getBoundingClientRect().width + 10 : 300), behavior:'smooth'}); };
 document.querySelector('.fleche.g').addEventListener('click', () => pas(-1));
 document.querySelector('.fleche.d').addEventListener('click', () => pas(1));
+/* Souris : attraper le carrousel et le faire glisser. Au relâchement, il se cale sur la carte
+   la plus proche du centre. Un glissement de plus de 5 px n'est pas compté comme un clic. */
+let saisie = null;
+list.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'mouse' || e.button !== 0) return;
+  saisie = {x: e.clientX, gauche: list.scrollLeft, bouge: false};
+});
+window.addEventListener('pointermove', e => {
+  if (!saisie) return;
+  const dx = e.clientX - saisie.x;
+  if (!saisie.bouge && Math.abs(dx) > 5) { saisie.bouge = true; list.classList.add('saisi'); }
+  if (saisie.bouge) { list.scrollLeft = saisie.gauche - dx; e.preventDefault(); }
+});
+window.addEventListener('pointerup', () => {
+  if (!saisie) return;
+  const bouge = saisie.bouge; saisie = null;
+  if (!bouge) return;
+  const mil = list.getBoundingClientRect().left + list.clientWidth / 2;
+  let best = null, d = Infinity;
+  list.querySelectorAll('.carte[data-i]').forEach(c => { const r = c.getBoundingClientRect(), e = Math.abs(r.left + r.width / 2 - mil); if (e < d) { d = e; best = c; } });
+  const cible = best ? best.offsetLeft - (list.clientWidth - best.offsetWidth) / 2 : list.scrollLeft;
+  list.scrollTo({left: cible, behavior:'smooth'});
+  setTimeout(() => list.classList.remove('saisi'), 400);   // le calage reprend après l'animation
+  const bloque = ev => { ev.stopPropagation(); ev.preventDefault(); };   // seulement le clic qui suit ce relâchement
+  list.addEventListener('click', bloque, true);
+  setTimeout(() => list.removeEventListener('click', bloque, true), 0);
+});
+list.addEventListener('dragstart', e => e.preventDefault());
 layer.on('animationend', surligne);
 map.on('zoomend', surligne);
 
