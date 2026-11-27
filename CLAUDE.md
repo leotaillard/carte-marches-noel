@@ -88,3 +88,4 @@ Voir README.md. En bref : dépôt GitHub public, Pages sur la branche `main`, do
 
 - Vérifier les coordonnées : vallée du Gottéron, Arsen'alt, Golf de Payerne, château de Montet.
 - Branches `variante-rues` et `variantes-carte` : essais antérieurs, dépassés par la version en ligne (A + C + D).
+- Aperçu « carrousel » (`apercu-carrousel.html`, généré par `outils/apercu-carrousel.py` depuis `index.html`) : carte pleine largeur, filtres flottants en haut, marchés en cartes horizontales en bas, à la manière de Strava. Publié à part pour décision ; l'article utilise toujours `index.html`. Si retenu, il remplace `index.html` ; sinon, supprimer les deux fichiers.
